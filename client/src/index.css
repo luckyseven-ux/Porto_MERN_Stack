@@ -1,0 +1,56 @@
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    :root {
+        --bg-color-light: #ffffff;
+        --text-color-light: #000000;
+        --bg-color-dark: #1a202c;
+        --text-color-dark: #ffffff;
+    }
+    
+    body {
+        transition: background-color 0.3s, color 0.3s;
+    }
+    
+    body.light {
+        background-color: var(--bg-color-light);
+        color: var(--text-color-light);
+    }
+    
+    body.dark {
+        background-color: var(--bg-color-dark);
+        color: var(--text-color-dark);
+    }
+    
+    body.light .bg-indigo-700 {
+        background-color: #9fa9ff;
+      }
+      
+      body.dark .bg-indigo-700 {
+        background-color: #11166b;
+      }
+    body.light .bg-slate-800 {
+        background-color: #dfdfdf;
+      }
+      
+      body.dark .bg-slate-800 {
+        background-color: #18181a;
+      }
+    /* Example of overriding specific elements */
+    body.light .bg-blue-800 {
+        background-color: #c2c2c2;
+        
+        /* Example color for light mode */
+    }
+    
+    body.dark .bg-blue-800 {
+        background-color: #2b2b2b; /* Example color for dark mode */
+    }
+    body.light .text-white {
+        color: #000000;
+      }
+      
+      body.dark .text-white {
+        color: #ffffff;
+      }
