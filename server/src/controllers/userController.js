@@ -6,43 +6,55 @@ import nodemailer from 'nodemailer'
 import User from '../models/user_schema.js'
 
 export const register = async (req, res) => {
-    const { username, email, password, retype_password } = req.body;
-  
-    // Validasi password dan retype_password
-    if (password !== retype_password) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+  const { username, email, password, retype_password } = req.body;
+
+  // Validasi password dan retype_password
+  if (password !== retype_password) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  try {
+    // Periksa apakah pengguna sudah ada
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username or email already exists' });
     }
-  
-    try {
-      // Periksa apakah pengguna sudah ada
-      const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-      if (existingUser) {
-        return res.status(400).json({ message: 'Username or email already exists' });
-      }
-  
-      // Hash password sebelum menyimpan ke database
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      // Buat ID unik dengan panjang 5 karakter menggunakan crypto.randomUUID
-      const userId = crypto.randomUUID().substring(0, 5);
-  
-      // Buat pengguna baru
-      const newUser = new User({
-        userId,
-        username,
-        email,
-        password: hashedPassword,
-        created_time: new Date()
-      });
-  
-      // Simpan pengguna ke database
-      await newUser.save();
-  
-      res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
+
+    // Hash password sebelum menyimpan ke database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Buat ID unik dengan panjang 5 karakter menggunakan kombinasi dari crypto.randomBytes
+    let userId;
+    let userExists;
+
+    do {
+      userId = crypto.randomBytes(3).toString('hex');
+      userExists = await User.findOne({ userId });
+    } while (userExists);
+
+    // Buat pengguna baru
+    const newUser = new User({
+      userId,
+      username,
+      email,
+      password: hashedPassword,
+      created_time: new Date()
+    });
+
+    // Simpan pengguna ke database
+    await newUser.save();
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    if (error.code === 11000) {
+      // Tangani error duplicate key
+      const duplicateField = Object.keys(error.keyValue)[0];
+      res.status(400).json({ message: `Duplicate key error: ${duplicateField} already exists`, error: error.keyValue });
+    } else {
       res.status(500).json({ message: 'Database error', error: error.message });
     }
-  };
+  }
+};
 
   export const login = async (req, res) => {
     const { username,email, password } = req.body;
@@ -67,7 +79,8 @@ export const register = async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.cookie('username', user.username, { httpOnly: true });
 
-        return res.status(200).json({ message: 'Login successfully', token: token });
+        res.status(200).json({ message: 'Login successfully', token: token });
+        return console.log(token)
 
         
         // Kirim token ke server Flask

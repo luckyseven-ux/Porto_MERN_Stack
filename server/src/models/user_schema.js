@@ -53,7 +53,6 @@ userSchema.virtual('id').get(function(){
   return this._id.toHexString();
 });
 
-// Menambahkan Index
 userSchema.index({ userId: 1 }, { unique: true });
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
