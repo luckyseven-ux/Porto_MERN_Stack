@@ -11,6 +11,7 @@ import parallax1 from "../img/parallax1.jpg";
 import parallax2 from "../img/parallax2.jpg";
 import parallax3 from "../img/parallax3.jpg";
 import parallax4 from "../img/parallax4.jpg";
+import { ApplePodcastsLogo,Atom,Barn } from "@phosphor-icons/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -91,7 +92,7 @@ function HomePage() {
       {/* Bagian text yang menggunakan flexbox */}
       <div className="flex justify-between items-center text-center py-12 mt-24">
         <div className="flex flex-col items-center w-1/3 px-4">
-          <img src="path_to_icon1.png" alt="Icon 1" className="mb-4" />
+          <ApplePodcastsLogo className="mb-8" size={64}/>
           <h1 className="text-2xl font-bold">Build Faster</h1>
           <p className="text-gray-700 mt-2">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
@@ -102,7 +103,7 @@ function HomePage() {
         </div>
 
         <div className="flex flex-col items-center w-1/3 px-4">
-          <img src="path_to_icon2.png" alt="Icon 2" className="mb-4" />
+        <Atom className="mb-8" size={64}/>
           <h1 className="text-2xl font-bold">Scale Further</h1>
           <p className="text-gray-700 mt-2">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
@@ -113,7 +114,7 @@ function HomePage() {
         </div>
 
         <div className="flex flex-col items-center w-1/3 px-4">
-          <img src="path_to_icon3.png" alt="Icon 3" className="mb-4" />
+        <Barn className="mb-8" size={64}/>
           <h1 className="text-2xl font-bold">Sleep Better</h1>
           <p className="text-gray-700 mt-2">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
@@ -125,8 +126,8 @@ function HomePage() {
       </div>
       {/* End of text flexbox */}
 
-      <div className="flex justify-center items-center mt-12">
-        <h1 className="text-2xl font-bold text-center w-1/2 mb-20">{writer}</h1>
+      <div className="flex justify-center items-center mt-24">
+        <h1 className="text-2xl font-bold text-center w-1/2 mb-36">{writer}</h1>
       </div>
 
       {/* Parallax section */}
