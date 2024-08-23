@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import { ThemeProvider } from './global/ThemeContext'
+import TestParallax from './test/TestParallax'
+import { gsap } from 'gsap'
 import './App.css'
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/testparallax" element={<TestParallax />} />
       </Routes>
     </Router>
     </ThemeProvider>
