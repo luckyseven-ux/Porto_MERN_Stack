@@ -14,25 +14,31 @@ function LoginPage() {
   const handleLogin = async (event) => {
     event.preventDefault();
     const { usernameOrEmail, password } = values;
-    let errors = {};
+    let validationErrors = {};
 
+    // Validasi input
     if (usernameOrEmail.trim() === '') {
-      errors.usernameOrEmail = 'Username or Email is required';
+      validationErrors.usernameOrEmail = 'Username or Email is required';
     }
     if (password.trim() === '') {
-      errors.password = 'Password is required';
+      validationErrors.password = 'Password is required';
     }
 
-    if (Object.keys(errors).length === 0) {
+    // Jika tidak ada error, lakukan login
+    if (Object.keys(validationErrors).length === 0) {
       try {
         const response = await axios.post('http://localhost:3000/user/login', {
           username: usernameOrEmail,
-          password
+          password,
         });
 
         if (response.status === 200) {
           const { token } = response.data;
+
+          // Simpan token ke localStorage
           localStorage.setItem('token', token);
+
+          // Redirect ke dashboard
           navigate('/dashboard');
         } else {
           setErrors({ login: 'Login failed' });
@@ -46,7 +52,7 @@ function LoginPage() {
         }
       }
     } else {
-      setErrors(errors);
+      setErrors(validationErrors);
     }
   };
 

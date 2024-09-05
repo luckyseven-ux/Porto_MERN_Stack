@@ -12,10 +12,18 @@ const sessionSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-    userId: {
+  userId: {
     type: String,
     required: true,
     unique: true
+  },
+  first_name: {
+    type: String,
+    required: true
+  },
+  last_name: {
+    type: String,
+    required: true
   },
   username: {
     type: String,
@@ -30,6 +38,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  phone: {
+    type: String,
+    required: false,
+    unique: true
   },
   created_time: {
     type: Date,
@@ -49,13 +62,14 @@ const userSchema = new mongoose.Schema({
 // Mengganti primary key default (_id) dengan field id
 userSchema.set('toJSON', { virtuals: true });
 userSchema.set('toObject', { virtuals: true });
-userSchema.virtual('id').get(function(){
+userSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
 
 userSchema.index({ userId: 1 }, { unique: true });
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ phone: 1 }, { unique: true });
 
 const User = mongoose.model('User', userSchema);
 

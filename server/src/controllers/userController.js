@@ -6,7 +6,7 @@ import nodemailer from 'nodemailer'
 import User from '../models/user_schema.js'
 
 export const register = async (req, res) => {
-  const { username, email, password, retype_password } = req.body;
+  const { username, email,first_name,last_name,phone, password, retype_password } = req.body;
 
   // Validasi password dan retype_password
   if (password !== retype_password) {
@@ -37,6 +37,9 @@ export const register = async (req, res) => {
       userId,
       username,
       email,
+      first_name,
+      last_name,
+      phone,
       password: hashedPassword,
       created_time: new Date()
     });
@@ -82,20 +85,7 @@ export const register = async (req, res) => {
         res.status(200).json({ message: 'Login successfully', token: token });
         return console.log(token)
 
-        
-        // Kirim token ke server Flask
-    /*try {
-        await fetch('http://localhost:5000/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ token })
-        });
-      } catch (fetchError) {
-        console.error('Error sending token to Flask:', fetchError);
-        // Tambahkan logika penanganan error jika diperlukan
-      } */
+ 
   
       // Send response
       return res.json({ token, user_id: user.id });

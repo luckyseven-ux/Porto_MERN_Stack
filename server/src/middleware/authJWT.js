@@ -7,7 +7,7 @@ const authJWT = (req, res, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) return res.status(403).json({ message: 'Invalid token' });
       console.log('Decoded user:', user); // Tambahkan log ini
-      req.user = user;
+      req.user = user; // Pastikan userId ada di sini
       next();
     });
   } else {

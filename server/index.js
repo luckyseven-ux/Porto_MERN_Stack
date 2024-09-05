@@ -5,6 +5,11 @@ import cors from 'cors';
 import MongoStore from 'connect-mongo';
 import bodyParser from 'body-parser';
 import userRoutes from './src/routes/userRoutes.js';
+import productRoutes from './src/routes/productRoutes.js';
+import categoryRoutes from './src/routes/categoryRoutes.js';
+import transactionRoutes from './src/routes/transactionRoutes.js';
+import cartRoutes from './src/routes/cartRoutes.js';
+
 import { mongo } from './src/database/db.js';
 
 // Load environment variables
@@ -44,6 +49,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 app.use('/user', userRoutes);
+app.use('/product', productRoutes);
+app.use('/cart', cartRoutes);
+app.use('/category', categoryRoutes);
+app.use('/transaction', transactionRoutes);
 
 app.get('/get-user', (req, res) => {
   const user = req.session.user;
