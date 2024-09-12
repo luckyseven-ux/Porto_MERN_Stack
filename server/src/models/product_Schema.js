@@ -52,6 +52,9 @@ const productSchema = new mongoose.Schema({
     type: String,
     ref: 'Category',
     required: true
+  },image:{
+    data: Buffer,
+    contentType: String
   },
   created_date: {
     type: Date,

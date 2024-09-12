@@ -9,13 +9,17 @@ export const getProducts = async (req, res) => {
       .populate('category', 'name') // Memuat nama kategori berdasarkan ID yang direferensikan
       .exec(); // Pastikan `exec()` dipanggil untuk mengeksekusi query
 
-    const formattedProducts = products.map(product => ({
-      ...product._doc,
-      created_date: new Date(product.created_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
-      updated_date: new Date(product.updated_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
-      category: product.category ? product.category.name : "No Category" // Menampilkan nama kategori, atau 'No Category' jika null
-    }));
-
+      const formattedProducts = products.map(product => {
+        return {
+          ...product._doc,
+          created_date: new Date(product.created_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+          updated_date: new Date(product.updated_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+          category: product.category ? product.category.name : "No Category",
+          image: product.image && product.image.data && product.image.contentType
+            ? `data:${product.image.contentType};base64,${product.image.data.toString('base64')}`
+            : null // Jika data gambar tidak ada, berikan nilai null atau placeholder image
+        };
+      });
     return res.status(200).json(formattedProducts);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -24,9 +28,31 @@ export const getProducts = async (req, res) => {
 
 
 
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Mencari produk berdasarkan ID
+    const product = await Product.findById(id);
+
+    // Jika produk tidak ditemukan
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Mengembalikan detail produk
+    return res.status(200).json(product);
+  } catch (error) {
+    // Menangani kesalahan server
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 export const postProduct = async (req, res) => {
   try {
-    const { name, price, category } = req.body;  // Ubah category_id menjadi category
+    const { name, price, category, image, imageType } = req.body;
 
     // Validasi input
     if (!name) {
@@ -41,15 +67,25 @@ export const postProduct = async (req, res) => {
       return res.status(422).json({ error: 'Category id perlu dimasukkan' });
     }
 
+    // Validasi gambar
+    if (!image) {
+      return res.status(422).json({ error: 'Image perlu dimasukkan' });
+    }
+
     // Periksa apakah kategori ada
-    const categoryExists = await Category.findOne({ id: category });  // Ubah category_id menjadi category
+    const categoryExists = await Category.findOne({ id: category });
     console.log("Category ID yang dicari:", category);
 
     if (!categoryExists) {
       return res.status(422).json({ error: 'Category id tidak ditemukan!' });
     }
+
     const currentDate = moment().tz('Asia/Jakarta').toDate();
 
+    // Mengonversi Base64 menjadi Buffer
+    const imageBuffer = Buffer.from(image, 'base64');
+
+    // Membuat produk baru dengan gambar yang telah dikonversi menjadi Buffer
     const newProduct = new Product({
       name,
       description: req.body.description || null,
@@ -57,7 +93,11 @@ export const postProduct = async (req, res) => {
       currency: req.body.currency || 'Rp',
       quantity: req.body.quantity || 0,
       active: req.body.active !== undefined ? req.body.active : true,
-      category: req.body.category,  // Menggunakan category
+      category: category,
+      image: {
+        data: imageBuffer,
+        contentType: imageType || null,
+      },
       created_date: currentDate,
       updated_date: currentDate,
     });
@@ -65,9 +105,11 @@ export const postProduct = async (req, res) => {
     const savedProduct = await newProduct.save();
     return res.status(201).json(`Product Added Successfully: ${savedProduct}`);
   } catch (error) {
+    console.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 
 

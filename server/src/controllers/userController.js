@@ -4,6 +4,41 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 import User from '../models/user_schema.js'
+// Pastikan Anda mengimpor model User
+
+// Endpoint untuk mendapatkan profil pengguna
+import mongoose from 'mongoose';
+
+export const getUser = async (req, res) => {
+  try {
+    const userId = req.user.id; // Ambil ID dari token yang telah didecode
+
+    // Cek apakah userId valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid User ID' });
+    }
+
+    // Konversi userId menjadi ObjectId
+    const objectId = new mongoose.Types.ObjectId(userId);
+
+    // Cari user berdasarkan _id (ObjectId)
+    const user = await User.findById(objectId).select('-password -sessions -reset_password_token -reset_password_expires');
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Kirim data user tanpa password, sesi, dan token reset
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+
+
 
 export const register = async (req, res) => {
   const { username, email,first_name,last_name,phone, password, retype_password } = req.body;

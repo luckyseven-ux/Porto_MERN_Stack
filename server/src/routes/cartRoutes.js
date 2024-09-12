@@ -1,11 +1,12 @@
 import express from "express";
-import { getCart,addCart,removeCart } from "../controllers/cartController.js";
+import { getCart,addCart,updateCart,removeCart } from "../controllers/cartController.js";
 import { authJWT } from "../middleware/authJWT.js";
 
 const router = express.Router();
 
 router.get("/see",authJWT, getCart);
 router.post("/add",authJWT, addCart);
-router.delete("/drop",authJWT, removeCart);
+router.put("/update/:productId",authJWT, updateCart);
+router.delete("/drop/:productId",authJWT, removeCart);
 
 export default router;

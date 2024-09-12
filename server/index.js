@@ -3,13 +3,11 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import cors from 'cors';
 import MongoStore from 'connect-mongo';
-import bodyParser from 'body-parser';
 import userRoutes from './src/routes/userRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import categoryRoutes from './src/routes/categoryRoutes.js';
 import transactionRoutes from './src/routes/transactionRoutes.js';
 import cartRoutes from './src/routes/cartRoutes.js';
-
 import { mongo } from './src/database/db.js';
 
 // Load environment variables
@@ -32,6 +30,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 
 app.use(session({
@@ -43,9 +42,8 @@ app.use(session({
 }));
 
 // Middleware
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Routes
 app.use('/user', userRoutes);
