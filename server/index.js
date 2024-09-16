@@ -8,6 +8,8 @@ import productRoutes from './src/routes/productRoutes.js';
 import categoryRoutes from './src/routes/categoryRoutes.js';
 import transactionRoutes from './src/routes/transactionRoutes.js';
 import cartRoutes from './src/routes/cartRoutes.js';
+import addressRoutes from './src/routes/addressRoutes.js';
+
 import { mongo } from './src/database/db.js';
 
 // Load environment variables
@@ -51,6 +53,7 @@ app.use('/product', productRoutes);
 app.use('/cart', cartRoutes);
 app.use('/category', categoryRoutes);
 app.use('/transaction', transactionRoutes);
+app.use('/address', addressRoutes);
 
 app.get('/get-user', (req, res) => {
   const user = req.session.user;

@@ -37,26 +37,42 @@ export const createTransaction = async (req, res) => {
     if (!product) {
       return res.status(400).json({ error: 'Invalid product' });
     }
-    const url = 'https://app.sandbox.midtrans.com/snap/v1/transactions'
+
     // Hitung total pembayaran di server
     const grossAmount = product.price * quantity;
 
-    // Generate orderId secara unik menggunakan randomBytes
+    // Generate orderId secara unik
     const orderId = generateOrderId();
 
+    // Siapkan detail transaksi untuk Midtrans
     const transactionDetails = {
       transaction_details: {
         order_id: orderId, // ID pesanan unik
         gross_amount: grossAmount, // Total pembayaran
       },
-      customer_details: customerDetails,
-      credit_card: { secure: true } // Credit card setting
+      credit_card: { secure: true }, // Credit card setting
     };
 
-    // Buat transaksi dengan Midtrans
-    const transaction = await snap.createTransaction(transactionDetails);
- 
+    // Siapkan opsi fetch berdasarkan contoh terbaru dari Midtrans
+    const url = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+    const options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: 'Basic ' + Buffer.from(process.env.SERVER_KEY_MIDTRANS).toString('base64'), // Pastikan menggunakan SERVER_KEY dari environment
+      },
+      body: JSON.stringify(transactionDetails), // Kirim transaksi ke Midtrans
+    };
+    console.log(customerDetails);
 
+    // Fetch ke Midtrans
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(400).json({ error: data.error_messages || 'Midtrans transaction failed' });
+    }
 
     // Simpan transaksi ke database
     const newTransaction = new Transaction({
@@ -64,23 +80,14 @@ export const createTransaction = async (req, res) => {
       product: productId,
       quantity,
       grossAmount,
-      transactionToken: transaction.token,
+      transactionToken: data.token,
       customerDetails,
       status: 'pending',
     });
     await newTransaction.save();
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(process.env.SERVER_KEY_MIDTRANS).toString('base64')
-      },
-      body: JSON.stringify(transactionDetails)
-    });
-    const data = await response.json();
-    const transactionRedirectUrl = transaction.redirect_url;
-
-    res.status(200).json({ transactionToken: data.token ,redirect_url:transactionRedirectUrl});
+    console.log(newTransaction);
+    // Kirim respons ke client
+    res.status(200).json({ transactionToken: data.token, redirect_url: data.redirect_url });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

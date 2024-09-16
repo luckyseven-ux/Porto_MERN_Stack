@@ -1,0 +1,87 @@
+ {
+        "city_id": "455",
+        "province_id": "3",
+        "province": "Banten",
+        "type": "Kabupaten",
+        "city_name": "Tangerang",
+        "postal_code": "15914"
+      },
+      {
+        "city_id": "456",
+        "province_id": "3",
+        "province": "Banten",
+        "type": "Kota",
+        "city_name": "Tangerang",
+        "postal_code": "15111"
+      },
+      {
+        "city_id": "457",
+        "province_id": "3",
+        "province": "Banten",
+        "type": "Kota",
+        "city_name": "Tangerang Selatan",
+        "postal_code": "15435"
+      },
+      {
+        "city_id": "151",
+        "province_id": "6",
+        "province": "DKI Jakarta",
+        "type": "Kota",
+        "city_name": "Jakarta Barat",
+        "postal_code": "11220"
+      },
+      {
+        "city_id": "152",
+        "province_id": "6",
+        "province": "DKI Jakarta",
+        "type": "Kota",
+        "city_name": "Jakarta Pusat",
+        "postal_code": "10540"
+      },
+      {
+        "city_id": "153",
+        "province_id": "6",
+        "province": "DKI Jakarta",
+        "type": "Kota",
+        "city_name": "Jakarta Selatan",
+        "postal_code": "12230"
+      },
+      {
+        "city_id": "154",
+        "province_id": "6",
+        "province": "DKI Jakarta",
+        "type": "Kota",
+        "city_name": "Jakarta Timur",
+        "postal_code": "13330"
+      },
+      {
+        "city_id": "155",
+        "province_id": "6",
+        "province": "DKI Jakarta",
+        "type": "Kota",
+        "city_name": "Jakarta Utara",
+        "postal_code": "14140"
+      },.{
+        "city_id": "22",
+        "province_id": "9",
+        "province": "Jawa Barat",
+        "type": "Kabupaten",
+        "city_name": "Bandung",
+        "postal_code": "40311"
+      },
+      {
+        "city_id": "23",
+        "province_id": "9",
+        "province": "Jawa Barat",
+        "type": "Kota",
+        "city_name": "Bandung",
+        "postal_code": "40111"
+      },
+      {
+        "city_id": "24",
+        "province_id": "9",
+        "province": "Jawa Barat",
+        "type": "Kabupaten",
+        "city_name": "Bandung Barat",
+        "postal_code": "40721"
+      },

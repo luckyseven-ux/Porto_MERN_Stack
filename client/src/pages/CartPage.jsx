@@ -190,7 +190,7 @@ const ShoppingCartPage = () => {
     }, 0);
   };
   
-  const handleCheckout = () => {
+  const handlePayment = () => {
   const selectedProducts = selectedItems.map(i => cart[i]);
   localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
   console.log("Selected Products: ", selectedProducts);
@@ -256,7 +256,7 @@ const ShoppingCartPage = () => {
             </div>
             <button 
               className="mt-6 w-full bg-gradient-to-r from-green-400 to-green-600 text-white py-3 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 hover:shadow-lg"
-              onClick={handleCheckout}
+              onClick={handlePayment}
             >
               Checkout
             </button>

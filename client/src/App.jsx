@@ -12,6 +12,7 @@ import ShoppingCartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import AddProductPage from "./pages/AddProductPage";
 import DetailProductPage from "./pages/ProductDetailPage";
+import AddAddressPage from "./pages/popup/AddAddress";
 import { CartProvider } from "./global/CartContext";
 import "./App.css";
 
@@ -33,6 +34,7 @@ function App() {
             <Route path="/productlist" element={<ProductPage />} />
             <Route path="/productdetail" element={<DetailProductPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/address" element={<AddAddressPage />} />
           </Routes>
         </Router>
       </CartProvider>
