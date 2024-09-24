@@ -7,7 +7,9 @@ const AddProductPage = () => {
     price: '',
     category: '',
     description: '',
-    quantity: '',
+    quantity: '', // Stock value
+    weight: '', // New weight field
+    unit: 'pcs', // New unit field with default value 'pcs'
     imageBase64: '',
     imageType: ''
   });
@@ -26,9 +28,9 @@ const AddProductPage = () => {
       alert('Please select an image file.');
       return;
     }
-  
+
     const reader = new FileReader();
-  
+
     reader.onloadend = () => {
       const base64String = reader.result.split(',')[1];
       setProductData({
@@ -36,28 +38,26 @@ const AddProductPage = () => {
         imageBase64: base64String,
         imageType: file.type,
       });
-      alert('Image uploaded successfully!'); // Tambahkan pesan sukses
+      alert('Image uploaded successfully!');
     };
-  
+
     reader.readAsDataURL(file);
   };
-  
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validasi gambar
     if (!productData.imageBase64 || !productData.imageType) {
       alert('Gambar produk wajib diunggah.');
       return;
     }
-  
+
     const dataToSend = {
       ...productData,
       image: productData.imageBase64, // Pastikan 'imageBase64' dikirim sebagai 'image'
     };
-  
+
     try {
       const response = await axios.post('http://localhost:3000/product/create', dataToSend);
       console.log('Product added:', response.data);
@@ -67,7 +67,7 @@ const AddProductPage = () => {
       alert('Failed to add product');
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
@@ -125,7 +125,7 @@ const AddProductPage = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-semibold mb-2" htmlFor="quantity">Quantity</label>
+            <label className="block text-sm font-semibold mb-2" htmlFor="quantity">Stock Quantity</label>
             <input
               type="number"
               id="quantity"
@@ -133,6 +133,32 @@ const AddProductPage = () => {
               value={productData.quantity}
               onChange={handleChange}
               className="border border-gray-300 rounded-md p-2 w-full"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2" htmlFor="weight">Weight (in gram)</label>
+            <input
+              type="number"
+              id="weight"
+              name="weight"
+              value={productData.weight}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2" htmlFor="unit">Unit</label>
+            <input
+              type="text"
+              id="unit"
+              name="unit"
+              value={productData.unit}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              placeholder="e.g. pcs, kg"
             />
           </div>
 

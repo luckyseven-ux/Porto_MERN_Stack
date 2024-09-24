@@ -19,19 +19,15 @@ const AddressSchema = new mongoose.Schema({
     required: true
   },
   cityId: {
-    type: String, // ID Kota dari RajaOngkir atau API sejenis
-    required: true
-  },
-  cityName: {
-    type: String, // Nama Kota yang akan tampil
+    type: String, // ID Kota dari API
     required: true
   },
   postalCode: {
     type: String,
     required: true
   },
-  province: {
-    type: String,
+  provinceId: { // Mengganti province menjadi provinceId
+    type: String, // ID Provinsi dari API
     required: true
   },
   isDefault: {
@@ -43,4 +39,3 @@ const AddressSchema = new mongoose.Schema({
 const Address = mongoose.model('Address', AddressSchema);
 
 export default Address;
-

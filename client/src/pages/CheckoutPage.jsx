@@ -1,32 +1,30 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import AddressPopup from '../pages/popup/AddressPopup';
-import Navbar from '../component/LoginNavbar';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import AddressPopup from "../pages/popup/AddressPopup";
+import Navbar from "../component/LoginNavbar";
 
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [selectedProducts, setSelectedProducts] = useState(location.state?.selectedProducts || []);
+  const [selectedProducts, setSelectedProducts] = useState(
+    location.state?.selectedProducts || []
+  );
   const [shippingOptions, setShippingOptions] = useState([]);
-  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [selectedShipping, setSelectedShipping] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [defaultAddress, setDefaultAddress] = useState(null);
 
   const [customerDetails, setCustomerDetails] = useState({
-    userId: '',
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
+    userId: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
   });
 
-  // Calculate total price using useMemo
+  // Hitung total harga
   const calculateTotal = useMemo(() => {
     return selectedProducts.reduce((total, item) => {
-      if (!item.productId.price || isNaN(item.productId.price)) {
-        console.error('Invalid price found in item:', item);
-        return total;
-      }
       return total + item.productId.price * item.quantity;
     }, 0);
   }, [selectedProducts]);
@@ -36,96 +34,138 @@ const CheckoutPage = () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        navigate("/login"); // Redirect to login if not authenticated
+        navigate("/login");
         return;
       }
 
       setIsAuthenticated(true);
 
       try {
-        // Fetch user profile and default address
         const fetchUserProfile = async () => {
-          const response = await fetch('http://localhost:3000/user/see', {
-            method: 'GET',
+          const response = await fetch("http://localhost:3000/user/see", {
+            method: "GET",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`, // Sertakan token
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
           });
 
           if (response.ok) {
             const userData = await response.json();
             setCustomerDetails({
-              userId: userData.userId,  // Pastikan userId sesuai dengan API
+              userId: userData.userId,
               first_name: userData.first_name,
               last_name: userData.last_name,
               email: userData.email,
               phone: userData.phone,
             });
-
-            // Fetch default address
-            const addressResponse = await fetch(`http://localhost:3000/addresses/see`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-
-            if (addressResponse.ok) {
-              const addressData = await addressResponse.json();
-              const defaultAddr = addressData.find(address => address.isDefault);
-              setDefaultAddress(defaultAddr || null);
-            } else {
-              console.error('Failed to fetch addresses');
-            }
           } else {
-            console.error('Failed to fetch user profile');
+            console.error("Failed to fetch user profile");
           }
         };
 
         await fetchUserProfile();
 
-        // Fetch shipping options
-        const fetchShippingOptions = async () => {
-          const response = await fetch("https://api.rajaongkir.com/starter/city", {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          if (response.ok) {
-            const result = await response.json();
-            setShippingOptions(result.data);
-          } else {
-            console.error('Failed to fetch shipping options:', response.statusText);
-          }
-        };
+        if (selectedProducts.length > 0) {
+          const addressResponse = await fetch(
+            "http://localhost:3000/address/see",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-        await fetchShippingOptions();
+          if (addressResponse.ok) {
+            const addressData = await addressResponse.json();
+            const defaultAddr = addressData.find(
+              (address) => address.isDefault
+            );
+            setDefaultAddress(defaultAddr || null);
+
+            if (defaultAddr) {
+              const fetchShippingOptions = async () => {
+                const totalWeight = selectedProducts.reduce((total, item) => {
+                  const weight = item.productId?.weight || 0;
+                  return total + weight * item.quantity;
+                }, 0);
+              
+                if (totalWeight === 0) {
+                  console.error(
+                    "Total weight is 0, cannot proceed with shipping calculation."
+                  );
+                  return;
+                }
+              
+                const shippingDataPayload = {
+                  origin: "501",
+                  destination: defaultAddr.cityId, // Pastikan defaultAddr.cityId valid
+                  weight: totalWeight,
+                  courier: "jne",
+                };
+              
+                try {
+                  const shippingResponse = await fetch(
+                    "http://localhost:3000/address/shiping", // URL yang benar
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`, // Pastikan token valid
+                      },
+                      body: JSON.stringify(shippingDataPayload),
+                    }
+                  );
+              
+                  if (shippingResponse.ok) {
+                    const shippingData = await shippingResponse.json();
+                    console.log("Shipping Data Response:", shippingData); // Tambahkan ini
+                    setShippingOptions(shippingData.rajaongkir?.results || []); // 
+                  } else {
+                    const errorResponse = await shippingResponse.text();
+                    console.error("Failed to fetch shipping options:", errorResponse);
+                  }
+                } catch (error) {
+                  console.error("Error occurred while fetching shipping options:", error);
+                }
+              };
+              
+               fetchShippingOptions() ,[];
+            } else {
+              console.error("No default address found");
+            }
+          } else {
+            console.error("Failed to fetch address data");
+          }
+        } else {
+          console.error("No products selected.");
+        }
       } catch (error) {
-        console.error('Error during authentication or fetching data:', error);
+        console.error("Error during user authentication:", error);
       }
     };
 
-    authenticateUser();
-
     if (selectedProducts.length === 0) {
-      const savedProducts = localStorage.getItem('selectedProducts');
+      const savedProducts = localStorage.getItem("selectedProducts");
       if (savedProducts) {
         setSelectedProducts(JSON.parse(savedProducts));
       } else {
-        navigate('/cart'); // Go back to cart if no data
+        navigate("/cart");
       }
+    } else {
+      authenticateUser();
     }
   }, [navigate, selectedProducts.length]);
 
   const handleCheckout = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const selectedProduct = selectedProducts[0];
-      if (!selectedProduct || !selectedProduct.productId) {
-        throw new Error('Invalid product selected');
+      if (!selectedProducts.length) {
+        console.error("Tidak ada produk yang dipilih.");
+        return;
       }
 
       const requestData = {
@@ -134,11 +174,11 @@ const CheckoutPage = () => {
         customerDetails,
       };
 
-      const response = await fetch('http://localhost:3000/transaction/create', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/transaction/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestData),
       });
@@ -148,10 +188,13 @@ const CheckoutPage = () => {
       if (response.ok && data.redirect_url) {
         window.location.href = data.redirect_url;
       } else {
-        console.error('Failed to initiate transaction:', data.error || 'Unknown error');
+        console.error(
+          "Gagal memulai transaksi:",
+          data.error || "Error tidak diketahui"
+        );
       }
     } catch (error) {
-      console.error('Error initiating transaction:', error);
+      console.error("Error memulai transaksi:", error);
     }
   }, [selectedProducts, customerDetails]);
 
@@ -160,7 +203,10 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('./src/img/bg2.jpg')" }}>
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('./src/img/bg2.jpg')" }}
+    >
       <Navbar isLoggedIn={isAuthenticated} />
       <div className="flex space-x-8 p-8">
         <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
@@ -169,24 +215,28 @@ const CheckoutPage = () => {
             <h3 className="text-lg font-semibold">ALAMAT PENGIRIMAN</h3>
             {defaultAddress ? (
               <p className="mt-2">
-                <span className="font-semibold">{defaultAddress.address}</span> - {defaultAddress.receiverName}
+                <span className="font-semibold">{defaultAddress.address}</span>{" "}
+                - {defaultAddress.receiverName}
                 <br />
-                {defaultAddress.cityName}, {defaultAddress.province}, {defaultAddress.postalCode}, {defaultAddress.phone}
+                {defaultAddress.cityName}, {defaultAddress.province},{" "}
+                {defaultAddress.postalCode}, {defaultAddress.phone}
               </p>
             ) : (
               <p>Alamat default tidak ditemukan.</p>
             )}
             <AddressPopup />
-            <div className="flex mt-4 space-x-4">
-              <button className="border border-gray-300 px-4 py-2 rounded-md">Ganti Alamat</button>
-              <button className="border border-gray-300 px-4 py-2 rounded-md">Kirim ke Beberapa Alamat</button>
-            </div>
           </div>
 
           <div>
             {selectedProducts.length > 0 ? (
               selectedProducts.map((item, index) => (
-                <div key={index}>
+                <div key={index} style={{ marginBottom: "16px" }}>
+                  <img
+                    className="rounded-md"
+                    src={item.productId.image}
+                    alt={item.productId.name}
+                    style={{ width: "100px", height: "100px" }}
+                  />
                   <p>{item.productId.name}</p>
                   <p>Qty: {item.quantity}</p>
                   <p>Price: Rp {item.productId.price}</p>
@@ -198,23 +248,39 @@ const CheckoutPage = () => {
           </div>
 
           <div className="mb-6 mt-6">
-            <label htmlFor="shipping" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="shipping"
+              className="block text-sm font-medium text-gray-700"
+            >
               Pilih Pengiriman
             </label>
             <select
-              id="shipping"
-              name="shipping"
-              value={selectedShipping}
-              onChange={handleShippingChange}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="">Pilih Pengiriman</option>
-              {shippingOptions.map((option, index) => (
-                <option key={index} value={option.service}>
-                  {option.service} - Rp{option.cost}
-                </option>
-              ))}
-            </select>
+  id="shipping"
+  name="shipping"
+  value={selectedShipping}
+  onChange={handleShippingChange}
+  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+>
+  <option value="">Pilih Pengiriman</option>
+  {Array.isArray(shippingOptions) && shippingOptions.length > 0 && shippingOptions[0].costs ? (
+    shippingOptions[0].costs.map((option, index) => {
+      // Logging untuk melihat apakah datanya benar
+      console.log("Service:", option.service, "Cost:", option.cost[0]?.value);
+
+      return (
+        <option key={index} value={option.service}>
+          {option.service} - Rp{option.cost[0]?.value}
+        </option>
+      );
+    })
+  ) : (
+    <option disabled>Opsi pengiriman tidak tersedia</option>
+  )}
+</select>
+
+
+
+
           </div>
         </div>
 

@@ -30,20 +30,31 @@ export const getProducts = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Mengambil ID produk dari parameter URL
 
-    // Mencari produk berdasarkan ID
-    const product = await Product.findById(id);
+    // Cari produk berdasarkan ID
+    const product = await Product.findById(id)
+      .populate('category', 'name') // Memuat nama kategori
+      .exec(); // Mengeksekusi query
 
-    // Jika produk tidak ditemukan
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Mengembalikan detail produk
-    return res.status(200).json(product);
+    // Format gambar dan waktu yang dikembalikan
+    const formattedProduct = {
+      ...product._doc,
+      created_date: new Date(product.created_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+      updated_date: new Date(product.updated_date).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+      category: product.category ? product.category.name : "No Category",
+      image: product.image && product.image.data && product.image.contentType
+        ? `data:${product.image.contentType};base64,${product.image.data.toString('base64')}`
+        : null // Jika gambar tidak ada, kembalikan null atau placeholder
+    };
+
+    return res.status(200).json(formattedProduct);
   } catch (error) {
-    // Menangani kesalahan server
+    console.error('Error fetching product by ID:', error);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -52,7 +63,7 @@ export const getProductById = async (req, res) => {
 
 export const postProduct = async (req, res) => {
   try {
-    const { name, price, category, image, imageType } = req.body;
+    const { name, price, category,weight, image, imageType } = req.body;
 
     // Validasi input
     if (!name) {
@@ -65,6 +76,9 @@ export const postProduct = async (req, res) => {
 
     if (!category) {
       return res.status(422).json({ error: 'Category id perlu dimasukkan' });
+    }
+    if (!weight) {
+      return res.status(422).json({ error: 'Weight perlu dimasukkan' });
     }
 
     // Validasi gambar
@@ -92,6 +106,8 @@ export const postProduct = async (req, res) => {
       price,
       currency: req.body.currency || 'Rp',
       quantity: req.body.quantity || 0,
+      weight: weight,
+      unit: req.body.unit || 'pcs',
       active: req.body.active !== undefined ? req.body.active : true,
       category: category,
       image: {

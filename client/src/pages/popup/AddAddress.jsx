@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const AddressModal = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [cities, setCities] = useState([]);
+  const [provinces, setProvinces] = useState([]); // State untuk provinsi
   const [isLoading, setIsLoading] = useState(false); // Untuk loading state saat mengirim data
   const navigate = useNavigate();
 
@@ -12,29 +13,46 @@ const AddressModal = ({ onClose }) => {
     street: '',
     cityId: '',
     postalCode: '',
-    province: '',
+    provinceId: '', // Mengganti 'province' menjadi 'provinceId' agar konsisten dengan API
     isDefault: false,
     receiverName: '',
     phone: '',
   });
 
-  // Mengambil daftar kota dari API RajaOngkir
+  // Mengambil daftar kota dari backend lokal
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await fetch('https://api.rajaongkir.com/starter/city', {
+        const response = await fetch('http://localhost:3000/address/city', {
           headers: {
-            key: 'API_KEY_RAJAOngkir', // Ganti dengan API Key RajaOngkir Anda
+            'Content-Type': 'application/json',
           },
         });
         const data = await response.json();
-        setCities(data.rajaongkir.results);
+        setCities(data); // Menggunakan daftar kota dari backend
       } catch (error) {
         console.error('Error fetching cities:', error);
       }
     };
 
     fetchCities();
+
+    // Mengambil daftar provinsi dari backend lokal
+    const fetchProvinces = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/address/prov', { // Menggunakan endpoint provinsi yang benar
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        setProvinces(data); // Menggunakan daftar provinsi dari backend
+      } catch (error) {
+        console.error('Error fetching provinces:', error);
+      }
+    };
+
+    fetchProvinces();
   }, []);
 
   // Fungsi untuk menangani perubahan input form
@@ -62,10 +80,10 @@ const AddressModal = ({ onClose }) => {
     const addressData = {
       receiverName: address.receiverName,
       phone: address.phone,
-      address: address.street, // Menggunakan 'street' sebagai bagian dari alamat
-      cityId: address.cityId, // CityId yang berasal dari API RajaOngkir
+      address: address.street,
+      cityId: address.cityId, // CityId yang berasal dari API backend
       postalCode: address.postalCode,
-      province: address.province,
+      provinceId: address.provinceId, // ProvinceId dari API backend
       isDefault: address.isDefault,
     };
 
@@ -116,6 +134,27 @@ const AddressModal = ({ onClose }) => {
               </div>
 
               <div className="mb-4">
+                <label htmlFor="provinceId" className="block text-sm font-medium text-gray-700">
+                  Provinsi
+                </label>
+                <select
+                  id="provinceId"
+                  name="provinceId"
+                  value={address.provinceId}
+                  onChange={handleChange}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  required
+                >
+                  <option value="">Pilih Provinsi</option>
+                  {provinces.map((province) => (
+                    <option key={province.province_id} value={province.province_id}>
+                      {province.province}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-4">
                 <label htmlFor="cityId" className="block text-sm font-medium text-gray-700">
                   Kota
                 </label>
@@ -152,21 +191,6 @@ const AddressModal = ({ onClose }) => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="province" className="block text-sm font-medium text-gray-700">
-                  Provinsi
-                </label>
-                <input
-                  type="text"
-                  id="province"
-                  name="province"
-                  value={address.province}
-                  onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
                   <input
                     type="checkbox"
@@ -182,7 +206,7 @@ const AddressModal = ({ onClose }) => {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={()=>navigate('/checkout')}
+                  onClick={() => navigate('/checkout')}
                   className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2"
                 >
                   Batal
@@ -231,18 +255,17 @@ const AddressModal = ({ onClose }) => {
 
               <div className="flex justify-end">
                 <button
-                  type="button"
-                  onClick={onClose}
+                  onClick={() => setStep(1)}
                   className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2"
                 >
-                  Batal
+                  Kembali
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                  className="bg-green-500 text-white px-4 py-2 rounded-md"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Menyimpan...' : 'Simpan Alamat'}
+                  {isLoading ? 'Menambahkan...' : 'Simpan Alamat'}
                 </button>
               </div>
             </>

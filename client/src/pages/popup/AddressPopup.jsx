@@ -34,7 +34,62 @@ const AddressPopup = () => {
   
     fetchAddresses();
   }, []);
+
+  // Handle setting default address
+  const handleDefault = async (addressId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Anda perlu login terlebih dahulu.');
+        // Arahkan pengguna ke halaman login atau tangani sesuai kebutuhan
+        return;
+      }
   
+      const response = await fetch(`http://localhost:3000/address/default/${addressId}`, {
+        method: 'POST', // POST method untuk mengubah alamat default
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ addressId }), // Kirim addressId sebagai body request
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Data fetched:', data);
+        alert('Berhasil di set sebagai alamat utama');
+  
+        // Refresh addresses state: mengubah status default pada UI
+        setAddresses((prevAddresses) =>
+          prevAddresses.map((address) =>
+            address._id === addressId
+              ? { ...address, isDefault: true }
+              : { ...address, isDefault: false }
+          )
+        );
+      } else if (response.status === 401) {
+        alert('Otentikasi gagal. Silakan login kembali.');
+        // Arahkan ke login
+      } else {
+        let errorMessage = 'Terjadi kesalahan.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Jika respons tidak JSON, tetap gunakan pesan default
+        }
+        console.error('Failed to set default address:', errorMessage);
+        alert(`Gagal mengatur alamat default: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      alert('Terjadi kesalahan saat mengatur alamat default. Silakan coba lagi.');
+    }
+  };
+  
+  
+
+  // Handle deleting address
   const handleDelete = async (addressId) => {
     const confirmDelete = window.confirm('Apakah Anda yakin ingin menghapus alamat ini?');
     if (!confirmDelete) return;
@@ -60,14 +115,13 @@ const AddressPopup = () => {
     }
   };
   
-
   return (
     <div>
       <button
         onClick={() => setShowModal(true)}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+        className=" mt-3 ml-7 px-4 py-2 bg-blue-500 text-white rounded-lg"
       >
-        Lihat Alamat
+        Ganti Alamat
       </button>
 
       <Modal show={showModal} onClose={() => setShowModal(false)}>
@@ -84,12 +138,24 @@ const AddressPopup = () => {
                   <p className="font-medium">{address.receiverName}</p>
                   <p>{address.address}, {address.cityName}, {address.province}, {address.postalCode}</p>
                 </div>
-                <button
-                  onClick={() => handleDelete(address._id)}
-                  className="text-red-500 bg-gray-200 px-3 py-1 rounded-lg"
-                >
-                  Hapus
-                </button>
+                <div className="flex items-center">
+                  {address.isDefault ? (
+                    <span className="text-green-500 mr-4">Default</span>
+                  ) : (
+                    <button
+                      onClick={() => handleDefault(address._id)}
+                      className="text-blue-500 bg-gray-200 px-3 py-1 rounded-lg mr-4"
+                    >
+                      Jadikan Default
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(address._id)}
+                    className="text-red-500 bg-gray-200 px-3 py-1 rounded-lg"
+                  >
+                    Hapus
+                  </button>
+                </div>
               </li>
             ))
           ) : (
@@ -98,7 +164,6 @@ const AddressPopup = () => {
         </ul>
 
         <button
-          
           onClick={() => navigate('/address')}
           className="flex items-center mt-4 text-blue-500"
         >

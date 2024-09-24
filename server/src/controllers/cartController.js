@@ -5,16 +5,39 @@ export const getCart = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const cart = await Cart.findOne({ userId }).populate('items.productId');
+    // Ambil cart berdasarkan userId dan populate produk di dalam items
+    const cart = await Cart.findOne({ userId })
+      .populate({
+        path: 'items.productId',
+        populate: { path: 'category', select: 'name' } // Populate category name
+      });
+
     if (!cart) {
       return res.status(404).json({ error: 'Cart not found' });
     }
 
-    res.status(200).json(cart);
+    // Format ulang data produk di cart agar termasuk gambar dan kategori
+    const formattedCart = {
+      ...cart._doc,
+      items: cart.items.map(item => ({
+        ...item._doc,
+        productId: {
+          ...item.productId._doc,
+          category: item.productId.category ? item.productId.category.name : "No Category",
+          image: item.productId.image && item.productId.image.data && item.productId.image.contentType
+            ? `data:${item.productId.image.contentType};base64,${item.productId.image.data.toString('base64')}`
+            : null // Jika data gambar tidak ada, berikan nilai null atau placeholder image
+        }
+      }))
+    };
+
+    res.status(200).json(formattedCart);
   } catch (error) {
+    console.error('Error fetching cart:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 export const addCart = async (req, res) => {

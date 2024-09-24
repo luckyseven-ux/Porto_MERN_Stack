@@ -175,7 +175,11 @@ const ShoppingCartPage = () => {
       setSelectedItems(selectedItems.filter(item => item !== index));
     };
     
-  
+    const convertBufferToImageUrl = (image) => {
+      const blob = new Blob([new Uint8Array(image.data)], { type: image.contentType });
+      return URL.createObjectURL(blob);
+    };
+    
   
   useEffect(() => {
     if (selectedProducts.length === 0) {
@@ -191,11 +195,17 @@ const ShoppingCartPage = () => {
   };
   
   const handlePayment = () => {
-  const selectedProducts = selectedItems.map(i => cart[i]);
-  localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
-  console.log("Selected Products: ", selectedProducts);
-  navigate('/checkout'); // Navigasi tanpa perlu kirim state
-};
+    const selectedProducts = selectedItems.map(i => ({
+      ...cart[i],
+      // Misalkan gambar produk ada di cart[i].image
+      image: cart[i].image
+    }));
+    
+    localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+    console.log("Selected Products: ", selectedProducts);
+    navigate('/checkout'); // Navigasi tanpa perlu kirim state
+  };
+  
 
 
   return (
@@ -208,44 +218,56 @@ const ShoppingCartPage = () => {
           <p className="text-gray-500">Your cart is empty.</p>
         ) : (
           <ul>
-            {cart.map((item, index) => (
-              <li key={index} className="flex justify-between items-center bg-gray-50 p-4 mb-2 rounded-lg shadow-sm">
-                <div className="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    className="mr-4" 
-                    checked={selectedItems.includes(index)} 
-                    onChange={() => toggleSelectItem(index)} 
-                  />
-                  <span className="font-medium text-gray-700">{item.productId.name} (x{item.quantity})</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="flex items-center mr-4">
-                    <button 
-                      onClick={() => decreaseQuantity(index)} 
-                      className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-l"
-                    >
-                      -
-                    </button>
-                    <span className="px-3 py-1 bg-white border-t border-b text-gray-800">{item.quantity}</span>
-                    <button 
-                      onClick={() => increaseQuantity(index)} 
-                      className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-r"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span className="text-lg font-semibold text-gray-800">Rp{item.productId.price * item.quantity}</span>
-                  <button 
-                    onClick={() => removeFromCart(index)} 
-                    className="ml-4 text-red-500 hover:text-red-700 font-semibold transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+  {cart.map((item, index) => (
+    <li key={index} className="flex justify-between items-center bg-gray-50 p-4 mb-2 rounded-lg shadow-sm">
+      <div className="flex items-center">
+        <input 
+          type="checkbox" 
+          className="mr-4" 
+          checked={selectedItems.includes(index)} 
+          onChange={() => toggleSelectItem(index)} 
+        />
+        
+        {/* Tambahkan gambar produk */}
+        <img 
+          src={item.productId.image} 
+          alt={item.productId.name} 
+          className="w-16 h-16 object-cover mr-4"
+        />
+        
+        <span className="font-medium text-gray-700">{item.productId.name} (x{item.quantity})</span>
+      </div>
+      
+      <div className="flex items-center">
+        <div className="flex items-center mr-4">
+          <button 
+            onClick={() => decreaseQuantity(index)} 
+            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-l"
+          >
+            -
+          </button>
+          <span className="px-3 py-1 bg-white border-t border-b text-gray-800">{item.quantity}</span>
+          <button 
+            onClick={() => increaseQuantity(index)} 
+            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-r"
+          >
+            +
+          </button>
+        </div>
+        
+        <span className="text-lg font-semibold text-gray-800">Rp{item.productId.price * item.quantity}</span>
+        
+        <button 
+          onClick={() => removeFromCart(index)} 
+          className="ml-4 text-red-500 hover:text-red-700 font-semibold transition-colors"
+        >
+          Remove
+        </button>
+      </div>
+    </li>
+  ))}
+</ul>
+
         )}
         
         {selectedItems.length > 0 && (

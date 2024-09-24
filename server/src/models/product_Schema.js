@@ -44,6 +44,14 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  weight: {
+    type: Number, // Assuming weight is in grams or kilograms
+    required: true // You can adjust this based on whether it's mandatory
+  },
+  unit: {
+    type: String,
+    default: 'pcs'
+  },
   active: {
     type: Boolean,
     default: true
@@ -51,8 +59,8 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     ref: 'Category',
-    required: true
-  },image:{
+    required: true},
+  image:{
     data: Buffer,
     contentType: String
   },
